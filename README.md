@@ -15,26 +15,27 @@ My attempt to reproduce a water down version of PBT (Population based training) 
 
 (2) Learning rate & gamma are the only 2 hyperparameters involved for now. Both can be inherited/mutated. Learning rate can be resampled/perturbed while gamma can only be resampled.
 
-# How to run the stuff in this repo?
-The easiest way is to copy this repo to your Google drive & run the `PBT_MARL_watered_down.ipynb` Jupyter notebook in Colab.
-
-# Walkthru:
+# Simple walkthru:
 Before each training iteration, the driver (in this context, the main process, this is also where the RLlib trainer resides) randomly selects a pair of agents (agt_i, agt_j, where i != j) from a population of agents. This i, j pair will take up the role of player_A & player_B respectively.
 
 The IDs of i,j will be transmitted down to the worker processes. Each worker has 1 or more environments ([vectorized](https://rllib.readthedocs.io/en/latest/rllib-env.html#vectorized)) & does it's own rollout. When an episode is sampled (that's when a match ends), the `on_episode_end` callback will be called. That's when the ratings of a match are computed & updated to a global storage.
 
-When enough samples are collected, training starts. Training is done using (RLlib's DDPPO)[https://docs.ray.io/en/master/rllib-algorithms.html#decentralized-distributed-proximal-policy-optimization-dd-ppo] (a variant of PPO). In DDPPO, learning does not happened in the trainer. Each worker does it's own learning. The trainer is still involved in the weight sync though.
+When enough samples are collected, training starts. Training is done using [RLlib's DDPPO](https://docs.ray.io/en/master/rllib-algorithms.html#decentralized-distributed-proximal-policy-optimization-dd-ppo) (a variant of PPO). In DDPPO, learning does not happened in the trainer. Each worker does it's own learning. However, the trainer is still involved in the weight sync.
 
 When a training iteration completes, `on_train_results` callback will be called. That's where inheritance & mutation happens (if conditions are fulfilled).
 
-All of the above happens in 1 single main training loop of the driver (NOT necessarily IN the driver, some will be running in the worker processes). Rinse & repeat.
+All of the above happens during 1 single main training loop of the driver. Rinse & repeat.
 
-Global coordination between different processes is done using [detached actors](https://docs.ray.io/en/master/advanced.html#detached-actors) from ray.
+Note: Global coordination between different processes is done using [detached actors](https://docs.ray.io/en/master/advanced.html#detached-actors) from ray.
+
+# How to run the contents in this repo?
+The easiest way is to run the `PBT_MARL_watered_down.ipynb` Jupyter notebook in Colab.
 
 # Dependencies:
 This is developed & tested on Colab & the following are the only packages that I explicitly `pip install`:
 
 ray[rllib]==0.85
+
 tensorflow==2.2.0
 
 # Disclaimer:
