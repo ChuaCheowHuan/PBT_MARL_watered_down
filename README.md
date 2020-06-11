@@ -13,7 +13,7 @@ My attempt to reproduce a water down version of PBT (Population based training) 
 (4) Probably many more...
 
 # What works?
-(1) Policies weights can be inherited between different agents.
+(1) Policies weights can be inherited between different agents in the population.
 
 (2) Learning rate & gamma are the only 2 hyperparameters involved for now. Both can be inherited/mutated. Learning rate can be resampled/perturbed while gamma can only be resampled.
 
