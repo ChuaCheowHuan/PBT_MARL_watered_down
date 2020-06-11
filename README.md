@@ -8,7 +8,9 @@ My attempt to reproduce a water down version of PBT (Population based training) 
 
 (2) PPO is used instead of SVG0.
 
-(3) Probably many more...
+(3) The evolution eligibility documented in B2 on page 16 in the [paper](https://arxiv.org/pdf/1902.07151.pdf)[1] is not implemented.
+
+(4) Probably many more...
 
 # What works?
 (1) Policies weights can be inherited between different agents.
