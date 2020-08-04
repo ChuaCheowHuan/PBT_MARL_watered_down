@@ -75,7 +75,7 @@ class PBT_MARL:
 
         # inherit hyperparam_j to hyperparam_i
         m = np.random.binomial(self.binomial_n, self.inherit_prob, size=1)[0]      # weightage to inherit from agt_i
-        self._inherit_hyperparameters(trainer, pol_j, pol_i, m)
+        return self._inherit_hyperparameters(trainer, pol_j, pol_i, m)
 
     def _cp_weight(self, trainer, src, dest):
         """
@@ -112,8 +112,6 @@ class PBT_MARL:
         """
         Don't perturb gamma, just resample when applicable.
         """
-        pol = pol_i
-
         if random.random() < self.perturb_prob:     # resample
             pol_i.config["lr"] = np.random.uniform(low=0.00001, high=0.1, size=None)
             pol_i.config["gamma"] = np.random.uniform(low=0.9, high=0.999, size=None)

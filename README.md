@@ -21,9 +21,9 @@ My attempt to reproduce a water down version of PBT (Population based training) 
 Both can be inherited/mutated. Learning rate can be resampled/perturbed while
 gamma can only be resampled.
 
-**EDIT**: Point (2) doesn't work as the configuration dict is replicated in the
-ray cluster so it's not something I can just change in my code. I'll be working
-on a workaround.
+**EDIT**:
+Learning rate should be working now. Gamma doesn't work as a mixin has to be
+added to a modified policy. I'll be fixing it.
 
 # Simple walkthru:
 Before each training iteration, the driver (in this context, the main process, this is also where the RLlib trainer resides) randomly selects a pair of agents (agt_i, agt_j, where i != j) from a population of agents. This i, j pair will take up the role of player_A & player_B respectively.
@@ -64,7 +64,7 @@ The easiest way is to run the `PBT_MARL_watered_down.ipynb` Jupyter notebook in 
 # Dependencies:
 This is developed & tested on Colab & the following are the only packages that I explicitly `pip install`:
 
-ray[rllib]==0.8.5
+ray[rllib]==0.8.6
 
 tensorflow==2.2.0
 
