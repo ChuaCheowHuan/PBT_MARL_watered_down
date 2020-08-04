@@ -22,8 +22,10 @@ Both can be inherited/mutated. Learning rate can be resampled/perturbed while
 gamma can only be resampled.
 
 **EDIT**:
-Learning rate should be working now. Gamma doesn't work as a mixin has to be
-added to a modified policy. I'll be fixing it.
+Learning rate should be working now only for PPO. 
+DDPPO requires modification of policy with schedules mixin. 
+Gamma doesn't work for the same reason. 
+I'll be fixing it.
 
 # Simple walkthru:
 Before each training iteration, the driver (in this context, the main process, this is also where the RLlib trainer resides) randomly selects a pair of agents (agt_i, agt_j, where i != j) from a population of agents. This i, j pair will take up the role of player_A & player_B respectively.
