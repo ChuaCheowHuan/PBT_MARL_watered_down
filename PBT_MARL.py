@@ -3,6 +3,7 @@
 import random
 import numpy as np
 import ray
+from ray.rllib.utils.schedules import ConstantSchedule
 
 class PBT_MARL:
     def __init__(self, population_size,
@@ -105,27 +106,31 @@ class PBT_MARL:
         print("src_pol.config['lr']", src_pol.config["lr"])
         print("dest_pol.config['lr']", dest_pol.config["lr"])
 
-    def _mutate(self, trainer, pol_i_id):
+        return dest_pol
+
+    def _mutate(self, pol_i_id, pol_i):
         """
         Don't perturb gamma, just resample when applicable.
         """
-        pol_i = "p_" + str(pol_i_id)
-        pol = trainer.get_policy(pol_i)
+        pol = pol_i
 
         if random.random() < self.perturb_prob:     # resample
-            pol.config["lr"] = np.random.uniform(low=0.00001, high=0.1, size=None)
-            pol.config["gamma"] = np.random.uniform(low=0.9, high=0.999, size=None)
+            pol_i.config["lr"] = np.random.uniform(low=0.00001, high=0.1, size=None)
+            pol_i.config["gamma"] = np.random.uniform(low=0.9, high=0.999, size=None)
         elif random.random() < 0.5:     # perturb_val = 0.8
-            pol.config["lr"] = pol.config["lr"] * self.perturb_val[0]
-            #pol.config["gamma"] = pol.config["gamma"] * self.perturb_val[0]
+            pol_i.config["lr"] = pol_i.config["lr"] * self.perturb_val[0]
+            #pol_i.config["gamma"] = pol_i.config["gamma"] * self.perturb_val[0]
         else:     # perturb_val = 1.2
-            pol.config["lr"] = pol.config["lr"] * self.perturb_val[1]
-            #pol.config["gamma"] = pol.config["gamma"] * self.perturb_val[1]
+            pol_i.config["lr"] = pol_i.config["lr"] * self.perturb_val[1]
+            #pol_i.config["gamma"] = pol_i.config["gamma"] * self.perturb_val[1]
 
         # update hyperparameters in storage
         key = "agt_" + str(pol_i_id)
         g_helper = ray.util.get_actor("g_helper")
-        ray.get(g_helper.update_hyperparameters.remote(key, pol.config["lr"], pol.config["gamma"]))
+        ray.get(g_helper.update_hyperparameters.remote(key, pol_i.config["lr"], pol_i.config["gamma"]))
+
+        # https://github.com/ray-project/ray/blob/051fdd8ee611e26950e104eeb9375d0d88a846d5/rllib/policy/tf_policy.py#L719
+        pol_i.lr_schedule = ConstantSchedule(pol_i.config["lr"], framework=None)
 
     def PBT(self, trainer):
         """
@@ -140,5 +145,5 @@ class PBT_MARL:
                 pol_j_id = self._select_agt_j(pol_i_id, self.population_size, self.T_select)
                 if pol_j_id is not None:
                     if self._is_parent(pol_j_id):
-                        self._inherit(trainer, pol_i_id, pol_j_id)
-                        self._mutate(trainer, pol_i_id)
+                        pol_i = self._inherit(trainer, pol_i_id, pol_j_id)
+                        self._mutate(pol_i_id, pol_i)
