@@ -53,12 +53,12 @@ class PBT_MARL:
         agt_i_key = "agt_{}".format(str(pol_i_id))
         agt_j_key = "agt_{}".format(str(pol_j_id))
 
-        g_helper = ray.util.get_actor("g_helper")
+        g_helper = ray.get_actor("g_helper")
         rating_i = ray.get(g_helper.get_rating.remote(agt_i_key))
         rating_j = ray.get(g_helper.get_rating.remote(agt_j_key))
 
         s_elo_val = self._s_elo(rating_j, rating_i)
-        print("s_elo_val:", s_elo_val)
+        #print("s_elo_val:", s_elo_val)
 
         if s_elo_val < T_select:
             return pol_j_id
@@ -68,7 +68,7 @@ class PBT_MARL:
     def _inherit(self, trainer, pol_i_id, pol_j_id):
         pol_i = "p_" + str(pol_i_id)
         pol_j = "p_" + str(pol_j_id)
-        print("{}_vs_{}".format(pol_i, pol_j))
+        #print("{}_vs_{}".format(pol_i, pol_j))
 
         # cpy param_j to param_i
         self._cp_weight(trainer, pol_j, pol_i)
@@ -96,15 +96,15 @@ class PBT_MARL:
 
     def _inherit_hyperparameters(self, trainer, src, dest, m):
         src_pol = trainer.get_policy(src)
-        print("src_pol.config['lr']", src_pol.config["lr"])
+        #print("src_pol.config['lr']", src_pol.config["lr"])
 
         dest_pol = trainer.get_policy(dest)
-        print("dest_pol.config['lr']", dest_pol.config["lr"])
+        #print("dest_pol.config['lr']", dest_pol.config["lr"])
 
         dest_pol.config["lr"] = m * dest_pol.config["lr"] + (1-m) * src_pol.config["lr"]
         dest_pol.config["gamma"] = m * dest_pol.config["gamma"] + (1-m) * src_pol.config["gamma"]
-        print("src_pol.config['lr']", src_pol.config["lr"])
-        print("dest_pol.config['lr']", dest_pol.config["lr"])
+        #print("src_pol.config['lr']", src_pol.config["lr"])
+        #print("dest_pol.config['lr']", dest_pol.config["lr"])
 
         return dest_pol
 
@@ -124,7 +124,7 @@ class PBT_MARL:
 
         # update hyperparameters in storage
         key = "agt_" + str(pol_i_id)
-        g_helper = ray.util.get_actor("g_helper")
+        g_helper = ray.get_actor("g_helper")
         ray.get(g_helper.update_hyperparameters.remote(key, pol_i.config["lr"], pol_i.config["gamma"]))
 
         # https://github.com/ray-project/ray/blob/051fdd8ee611e26950e104eeb9375d0d88a846d5/rllib/policy/tf_policy.py#L719

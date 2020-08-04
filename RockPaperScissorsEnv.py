@@ -26,7 +26,7 @@ class RockPaperScissorsEnv(MultiAgentEnv):
         self.num_moves = 0
 
     def reset(self):
-        g_helper = ray.util.get_actor("g_helper")
+        g_helper = ray.get_actor("g_helper")
         agt_i, agt_j = ray.get(g_helper.get_pair.remote())
         self.player_A = agt_i
         self.player_B = agt_j
