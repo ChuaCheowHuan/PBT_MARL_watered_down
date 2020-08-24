@@ -108,7 +108,7 @@ class PBT_MARL:
 
         return dest_pol
 
-    def _mutate(self, pol_i_id, pol_i):
+    def _mutate(self, trainer, pol_i_id, pol_i):
         """
         Don't perturb gamma, just resample when applicable.
         """
@@ -128,7 +128,16 @@ class PBT_MARL:
         ray.get(g_helper.update_hyperparameters.remote(key, pol_i.config["lr"], pol_i.config["gamma"]))
 
         # https://github.com/ray-project/ray/blob/051fdd8ee611e26950e104eeb9375d0d88a846d5/rllib/policy/tf_policy.py#L719
-        pol_i.lr_schedule = ConstantSchedule(pol_i.config["lr"], framework=None)
+        #pol_i.lr_schedule = ConstantSchedule(pol_i.config["lr"], framework=None)
+
+        #lr_0 = np.random.rand()
+        #lr_1 = lr_0 + 0.1
+        p_id = "p_" + str(pol_i_id)
+        for w in trainer.workers.remote_workers():
+            #w.foreach_policy.remote(lambda p, p_id: p.update_lr_schedule(i))
+            #w.for_policy.remote(lambda p: p.update_lr_schedule(lr_0), "p_0")
+            #w.for_policy.remote(lambda p: p.update_lr_schedule(lr_1), "p_1")
+            w.for_policy.remote(lambda p: p.update_lr_schedule(pol_i.config["lr"]), p_id)
 
     def PBT(self, trainer):
         """
@@ -144,4 +153,4 @@ class PBT_MARL:
                 if pol_j_id is not None:
                     if self._is_parent(pol_j_id):
                         pol_i = self._inherit(trainer, pol_i_id, pol_j_id)
-                        self._mutate(pol_i_id, pol_i)
+                        self._mutate(trainer, pol_i_id, pol_i)
