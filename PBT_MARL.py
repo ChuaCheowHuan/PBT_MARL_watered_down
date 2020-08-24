@@ -126,18 +126,13 @@ class PBT_MARL:
         key = "agt_" + str(pol_i_id)
         g_helper = ray.get_actor("g_helper")
         ray.get(g_helper.update_hyperparameters.remote(key, pol_i.config["lr"], pol_i.config["gamma"]))
-
-        # https://github.com/ray-project/ray/blob/051fdd8ee611e26950e104eeb9375d0d88a846d5/rllib/policy/tf_policy.py#L719
-        #pol_i.lr_schedule = ConstantSchedule(pol_i.config["lr"], framework=None)
-
-        #lr_0 = np.random.rand()
-        #lr_1 = lr_0 + 0.1
+    
         p_id = "p_" + str(pol_i_id)
         for w in trainer.workers.remote_workers():
-            #w.foreach_policy.remote(lambda p, p_id: p.update_lr_schedule(i))
-            #w.for_policy.remote(lambda p: p.update_lr_schedule(lr_0), "p_0")
-            #w.for_policy.remote(lambda p: p.update_lr_schedule(lr_1), "p_1")
+            # Changes in lr can be verifiable in tensorboard or pretty_print.
             w.for_policy.remote(lambda p: p.update_lr_schedule(pol_i.config["lr"]), p_id)
+            # gamma should be correct but can't verify in tensorboard unless gamma is added to custom metrics in callbacks.
+            w.for_policy.remote(lambda p: p.update_gamma(pol_i.config["gamma"]), p_id)
 
     def PBT(self, trainer):
         """
