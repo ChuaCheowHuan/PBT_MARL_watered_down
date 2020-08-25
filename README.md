@@ -19,13 +19,8 @@ My attempt to reproduce a water down version of PBT (Population based training) 
 
 (2) Learning rate & gamma are the only 2 hyperparameters involved for now.
 Both can be inherited/mutated. Learning rate can be resampled/perturbed while
-gamma can only be resampled.
-
-**EDIT**:
-Learning rate should be working now only for PPO. 
-DDPPO requires modification of policy with schedules mixin. 
-Gamma doesn't work for the same reason. 
-I'll be fixing it.
+gamma can only be resampled. Both hyperparameters changes are verifiable in
+tensorboard.
 
 # Simple walkthru:
 Before each training iteration, the driver (in this context, the main process, this is also where the RLlib trainer resides) randomly selects a pair of agents (agt_i, agt_j, where i != j) from a population of agents. This i, j pair will take up the role of player_A & player_B respectively.
@@ -64,11 +59,11 @@ Note: Global coordination between different processes is done using [detached ac
 The easiest way is to run the `PBT_MARL_watered_down.ipynb` Jupyter notebook in Colab.
 
 # Dependencies:
-This is developed & tested on Colab & the following are the only packages that I explicitly `pip install`:
+This is developed & tested in Colab.
 
-ray[rllib]==0.8.6
+ray[rllib] > 0.8.6 or lastest wheels for ray, won't work with ray <= 0.8.6
 
-tensorflow==2.2.0
+tensorflow==2.3.0
 
 # Disclaimer:
 (1) I'm not affiliated with any of the authors of the [paper](https://arxiv.org/pdf/1902.07151.pdf)[1].
